@@ -1,0 +1,304 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoveConnect - Random Video Chat</title>
+<meta name="description" content="Meet new people in India and worldwide with LoveConnect.">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0c18;color:white;font-family:Arial,sans-serif}
+header{padding:20px 6%;display:flex;justify-content:space-between;border-bottom:1px solid #292b43}
+.logo{font-size:25px;font-weight:bold;color:#ff548b}
+.online{color:#67e6a1;font-size:13px}
+main{max-width:1100px;margin:35px auto;padding:15px}
+h1{text-align:center;font-size:38px}
+h1 span{color:#ff548b}
+.sub{text-align:center;color:#a9acc3}
+.ad{border:1px dashed #555b77;padding:22px;text-align:center;color:#9299b2;margin:20px 0;border-radius:10px;font-size:12px}
+.videos{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.video{height:300px;background:#171a30;border:1px solid #343953;border-radius:15px;overflow:hidden;position:relative}
+video{width:100%;height:100%;object-fit:cover}
+.tag{position:absolute;bottom:12px;left:12px;background:#0009;padding:8px;border-radius:8px}
+.controls{display:flex;gap:10px;justify-content:center;margin:20px 0;flex-wrap:wrap}
+button{padding:13px 25px;border:0;border-radius:9px;color:white;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.4}
+.start{background:#f23e83}
+.next{background:#754de8}
+.stop{background:#343953}
+.report{background:#a83245}
+.status{text-align:center;color:#b8bfd7;margin:15px}
+.chat{background:#171a30;padding:18px;border-radius:15px;margin-top:20px}
+.messages{height:130px;overflow:auto;background:#0c1020;padding:12px;border-radius:8px}
+form{display:flex;gap:8px;margin-top:12px}
+input{flex:1;min-width:0;padding:13px;background:#0b1020;color:white;border:1px solid #454b69;border-radius:8px}
+.send{background:#754de8}
+.side{text-align:center;margin-top:20px;color:#9fa6bf;font-size:13px}
+footer{text-align:center;color:#888fa9;padding:25px;font-size:12px}
+footer a{color:#ff8eae}
+.modal{position:fixed;inset:0;background:#080918ed;display:flex;align-items:center;justify-content:center;padding:20px}
+.dialog{background:#191d34;padding:25px;border-radius:18px;max-width:430px;width:100%}
+.dialog p{color:#b5bdd2;line-height:1.6}
+.dialog button{width:100%;background:#f23e83}
+@media(max-width:600px){
+.videos{grid-template-columns:1fr}
+.video{height:230px}
+h1{font-size:30px}
+}
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo">LOVE CONNECT ❤️</div>
+<div class="online">● LIVE COMMUNITY</div>
+</header>
+
+<main>
+<div class="ad">ADVERTISEMENT - TOP BANNER</div>
+
+<h1>Meet Someone <span>New!</span></h1>
+<p class="sub">Random Video Chat | India + Worldwide</p>
+
+<div class="videos">
+<div class="video">
+<video id="local" autoplay muted playsinline></video>
+<div class="tag">You</div>
+</div>
+<div class="video">
+<video id="remote" autoplay playsinline></video>
+<div class="tag">Random Partner</div>
+</div>
+</div>
+
+<div class="controls">
+<button class="start" id="start">START</button>
+<button class="next" id="next" disabled>NEXT</button>
+<button class="stop" id="stop" disabled>STOP</button>
+<button class="report" id="report" disabled>REPORT</button>
+</div>
+
+<div class="status" id="status">Welcome to LoveConnect!</div>
+
+<div class="chat">
+<h3>💬 Live Text Chat</h3>
+<div class="messages" id="messages">Say hello to your new friend!</div>
+<form id="chatForm">
+<input id="message" placeholder="Type your message..." maxlength="500" disabled>
+<button class="send" id="send" disabled>SEND</button>
+</form>
+</div>
+
+<div class="side">
+<h3>Matching Preferences</h3>
+<select id="region">
+<option value="any">India + Worldwide</option>
+<option value="india">India Pool</option>
+<option value="world">Worldwide Pool</option>
+</select>
+<p>18+ Only | Respect Everyone | Stay Safe</p>
+</div>
+
+<div class="ad">ADVERTISEMENT - BOTTOM BANNER</div>
+</main>
+
+<footer>
+LoveConnect © 2026 |
+<a href="/privacy.html">Privacy</a> |
+<a href="/terms.html">Terms</a>
+</footer>
+
+<div class="modal" id="ageModal">
+<div class="dialog">
+<h2>Welcome to LoveConnect ❤️</h2>
+<p>This platform is for adults aged 18 and above. Your camera and microphone will only activate after you choose Start and grant permission.</p>
+<label><input type="checkbox" id="ageCheck"> I confirm I am 18+ and agree to the Terms and Privacy Policy.</label>
+<br><br>
+<button id="continue">CONTINUE</button>
+</div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
+
+<script>
+const socket = io();
+const $ = id => document.getElementById(id);
+
+let stream = null;
+let peer = null;
+let active = false;
+
+function status(text){
+  $("status").textContent = text;
+}
+
+function addMessage(name,text){
+  const p = document.createElement("p");
+  const b = document.createElement("b");
+  b.textContent = name + ": ";
+  p.append(b,document.createTextNode(text));
+  $("messages").appendChild(p);
+  $("messages").scrollTop = $("messages").scrollHeight;
+}
+
+function closePeer(){
+  if(peer){
+    peer.destroy();
+    peer = null;
+  }
+  $("remote").srcObject = null;
+  $("message").disabled = true;
+  $("send").disabled = true;
+  $("report").disabled = true;
+}
+
+function makePeer(initiator){
+  peer = new SimplePeer({
+    initiator,
+    stream: stream,
+    trickle: false
+  });
+
+  peer.on("signal",data=>{
+    socket.emit("signal",data);
+  });
+
+  peer.on("stream",remoteStream=>{
+    $("remote").srcObject = remoteStream;
+    $("message").disabled = false;
+    $("send").disabled = false;
+    $("report").disabled = false;
+    status("Connected! Start chatting ❤️");
+  });
+
+  peer.on("error",()=>{
+    status("Connection error. Try Next.");
+  });
+
+  peer.on("close",()=>{
+    closePeer();
+  });
+}
+
+$("continue").onclick=()=>{
+  if(!$("ageCheck").checked){
+    alert("Please confirm you are 18 or older.");
+    return;
+  }
+  $("ageModal").remove();
+};
+
+$("start").onclick=async()=>{
+  try{
+    if(!navigator.mediaDevices?.getUserMedia){
+      throw new Error("HTTPS connection required.");
+    }
+
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:true,
+      audio:true
+    });
+
+    $("local").srcObject=stream;
+    active=true;
+    $("start").disabled=true;
+    $("next").disabled=false;
+    $("stop").disabled=false;
+
+    status("Finding a random partner...");
+    socket.emit("find-partner",{
+      region:$("region").value
+    });
+
+  }catch(e){
+    status(e.message || "Camera permission denied.");
+  }
+};
+
+$("next").onclick=()=>{
+  closePeer();
+  status("Finding next partner...");
+  socket.emit("find-partner",{
+    region:$("region").value
+  });
+};
+
+$("stop").onclick=()=>{
+  active=false;
+  socket.emit("stop");
+  closePeer();
+
+  if(stream){
+    stream.getTracks().forEach(t=>t.stop());
+    stream=null;
+  }
+
+  $("local").srcObject=null;
+  $("start").disabled=false;
+  $("next").disabled=true;
+  $("stop").disabled=true;
+  status("Chat stopped.");
+};
+
+socket.on("waiting",()=>{
+  status("Waiting for someone to join...");
+});
+
+socket.on("matched",data=>{
+  closePeer();
+  $("report").disabled=false;
+  makePeer(data.initiator);
+  status("Partner found! Connecting...");
+});
+
+socket.on("signal",data=>{
+  if(peer) peer.signal(data);
+});
+
+socket.on("partner-left",data=>{
+  closePeer();
+  status(data.reason || "Partner disconnected.");
+});
+
+socket.on("chat-message",data=>{
+  addMessage("Partner",data.text);
+});
+
+socket.on("report-received",()=>{
+  status("Report submitted. Thank you.");
+});
+
+socket.on("banned",()=>{
+  status("This session has been blocked.");
+});
+
+$("chatForm").onsubmit=e=>{
+  e.preventDefault();
+  const text=$("message").value.trim();
+
+  if(!text)return;
+
+  addMessage("You",text);
+  socket.emit("chat-message",text);
+  $("message").value="";
+};
+
+$("report").onclick=()=>{
+  if(confirm("Report this user and end the chat?")){
+    socket.emit("report",{
+      reason:"User submitted report"
+    });
+    closePeer();
+    status("Report submitted.");
+  }
+};
+
+window.addEventListener("beforeunload",()=>{
+  if(peer)peer.destroy();
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+});
+</script>
+</body>
+</html>
