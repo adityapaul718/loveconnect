@@ -2,182 +2,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090d18">
-  <title>LoveConnect - Random Video Chat</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090d18">
+<title>LoveConnect - Random Video Chat</title>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
 
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #090d18;
-      color: #fff;
-      min-height: 100vh;
-    }
-    header {
-      padding: 17px 22px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #20283a;
-    }
-    .logo { font-size: 23px; font-weight: 800; color: #ff4d83; }
-    .logo span { color: white; }
-    .online { color: #8ce5ad; font-size: 12px; }
-    main {
-      width: min(1100px, 94%);
-      margin: 24px auto;
-    }
-    .intro { text-align: center; margin-bottom: 20px; }
-    .intro h1 { margin: 0 0 8px; font-size: 27px; }
-    .intro p { margin: 0; color: #9ba8bd; font-size: 14px; }
-    .videos {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .video-card {
-      position: relative;
-      background: #151d2d;
-      border: 1px solid #29354b;
-      border-radius: 15px;
-      overflow: hidden;
-      aspect-ratio: 16 / 10;
-    }
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      background: #101827;
-    }
-    .video-label {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      padding: 7px 11px;
-      border-radius: 20px;
-      background: #080d19c9;
-      font-size: 12px;
-      z-index: 2;
-    }
-    .video-placeholder {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      color: #aab6ca;
-      gap: 9px;
-      text-align: center;
-      padding: 15px;
-      pointer-events: none;
-    }
-    .video-placeholder strong { color: white; font-size: 15px; }
-    .video-placeholder small { font-size: 12px; }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin: 18px 0;
-    }
-    button {
-      border: 0;
-      border-radius: 9px;
-      padding: 12px 20px;
-      font-weight: 700;
-      cursor: pointer;
-      color: white;
-      background: #34415a;
-      font-size: 14px;
-    }
-    button:disabled { opacity: .45; cursor: not-allowed; }
-    .start { background: #e83e78; }
-    .next { background: #2367db; }
-    .stop { background: #424d60; }
-    .report { background: #9b3444; }
-    .status {
-      background: #131c2c;
-      border: 1px solid #26334a;
-      border-radius: 10px;
-      padding: 12px;
-      text-align: center;
-      color: #c8d3e5;
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
-    .chat {
-      background: #131c2c;
-      border: 1px solid #26334a;
-      border-radius: 14px;
-      padding: 15px;
-    }
-    .chat h3 { margin: 0 0 12px; font-size: 16px; }
-    #messages {
-      height: 190px;
-      overflow-y: auto;
-      background: #0b1220;
-      border-radius: 9px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-    .msg {
-      margin: 7px 0;
-      padding: 9px 11px;
-      border-radius: 9px;
-      max-width: 85%;
-      overflow-wrap: anywhere;
-      font-size: 13px;
-    }
-    .mine { background: #254e91; margin-left: auto; }
-    .theirs { background: #273348; margin-right: auto; }
-    .system {
-      color: #91a0b7;
-      text-align: center;
-      font-size: 12px;
-      margin: 10px 0;
-    }
-    .chat-input { display: flex; gap: 8px; }
-    input {
-      min-width: 0;
-      flex: 1;
-      padding: 12px;
-      border: 1px solid #34425a;
-      border-radius: 9px;
-      background: #0b1220;
-      color: white;
-      outline: none;
-    }
-    .send { background: #e83e78; }
-    .note {
-      text-align: center;
-      color: #8391a8;
-      font-size: 11px;
-      line-height: 1.6;
-      margin: 18px 0;
-    }
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: #7f8ba0;
-      font-size: 12px;
-    }
-    footer a { color: #ff7da4; text-decoration: none; margin: 0 8px; }
-    @media(max-width: 650px) {
-      main { margin: 17px auto; }
-      .videos { grid-template-columns: 1fr; }
-      .video-card { aspect-ratio: 16 / 10; }
-      .intro h1 { font-size: 23px; }
-      button { padding: 12px 15px; }
-    }
-  </style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#090d18;color:#fff;min-height:100vh}
+header{padding:17px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #20283a}
+.logo{font-size:23px;font-weight:800;color:#ff4d83}
+.logo span{color:white}
+.online{color:#8ce5ad;font-size:12px}
+main{width:min(1100px,94%);margin:24px auto}
+.intro{text-align:center;margin-bottom:20px}
+.intro h1{margin:0 0 8px;font-size:27px}
+.intro p{margin:0;color:#9ba8bd;font-size:14px}
+.videos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.video-card{position:relative;background:#151d2d;border:1px solid #29354b;border-radius:15px;overflow:hidden;aspect-ratio:16/10}
+video{width:100%;height:100%;object-fit:cover;display:block;background:#101827}
+.video-label{position:absolute;top:12px;left:12px;padding:7px 11px;border-radius:20px;background:#080d19c9;font-size:12px;z-index:2}
+.video-placeholder{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;flex-direction:column;color:#aab6ca;gap:9px;text-align:center;padding:15px;pointer-events:none}
+.video-placeholder strong{color:white;font-size:15px}
+.video-placeholder small{font-size:12px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0}
+button{border:0;border-radius:9px;padding:12px 20px;font-weight:700;cursor:pointer;color:white;background:#34415a;font-size:14px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.start{background:#e83e78}
+.next{background:#2367db}
+.stop{background:#424d60}
+.report{background:#9b3444}
+.status{background:#131c2c;border:1px solid #26334a;border-radius:10px;padding:12px;text-align:center;color:#c8d3e5;font-size:13px;margin-bottom:16px}
+.chat{background:#131c2c;border:1px solid #26334a;border-radius:14px;padding:15px}
+.chat h3{margin:0 0 12px;font-size:16px}
+#messages{height:190px;overflow-y:auto;background:#0b1220;border-radius:9px;padding:12px;margin-bottom:12px}
+.msg{margin:7px 0;padding:9px 11px;border-radius:9px;max-width:85%;overflow-wrap:anywhere;font-size:13px}
+.mine{background:#254e91;margin-left:auto}
+.theirs{background:#273348;margin-right:auto}
+.system{color:#91a0b7;text-align:center;font-size:12px;margin:10px 0}
+.chat-input{display:flex;gap:8px}
+input{min-width:0;flex:1;padding:12px;border:1px solid #34425a;border-radius:9px;background:#0b1220;color:white;outline:none}
+.send{background:#e83e78}
+.note{text-align:center;color:#8391a8;font-size:11px;line-height:1.6;margin:18px 0}
+footer{text-align:center;padding:20px;color:#7f8ba0;font-size:12px}
+footer a{color:#ff7da4;text-decoration:none;margin:0 8px}
+@media(max-width:650px){
+ main{margin:17px auto}
+ .videos{grid-template-columns:1fr}
+ .video-card{aspect-ratio:16/10}
+ .intro h1{font-size:23px}
+ button{padding:12px 15px}
+}
+</style>
 </head>
 
 <body>
@@ -249,7 +128,8 @@
 (() => {
   const socket = io();
 
-  const $ = (id) => document.getElementById(id);
+  const $ = id => document.getElementById(id);
+
   const localVideo = $("localVideo");
   const remoteVideo = $("remoteVideo");
   const localPlaceholder = $("localPlaceholder");
@@ -260,18 +140,57 @@
 
   let localStream = null;
   let peer = null;
+  let iceConfig = {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" }
+    ]
+  };
+
   let searching = false;
   let paired = false;
   let manuallyStopped = false;
   let connectionTimer = null;
+  let iceLoading = false;
 
-  const iceConfig = {
-    iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun1.l.google.com:19302" },
-      { urls: "stun:stun.cloudflare.com:3478" }
-    ]
-  };
+  // Load STUN and TURN configuration from your Render server
+  async function loadIceServers() {
+    if (iceLoading) return;
+    iceLoading = true;
+
+    try {
+      const response = await fetch("/api/ice-servers", {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error("ICE API returned " + response.status);
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data.iceServers) || !data.iceServers.length) {
+        throw new Error("No ICE servers received");
+      }
+
+      iceConfig = {
+        iceServers: data.iceServers
+      };
+
+      console.log("ICE servers successfully loaded");
+      console.log("TURN server available:", data.iceServers.some(server =>
+        (Array.isArray(server.urls) ? server.urls : [server.urls])
+          .some(url => typeof url === "string" && url.startsWith("turn"))
+      ));
+
+      return true;
+    } catch (error) {
+      console.error("ICE configuration error:", error);
+      setStatus("Could not load TURN configuration. Please retry.");
+      return false;
+    } finally {
+      iceLoading = false;
+    }
+  }
 
   function setStatus(message) {
     statusBox.textContent = message;
@@ -316,7 +235,11 @@
     peer = null;
 
     if (oldPeer && !oldPeer.destroyed) {
-      try { oldPeer.destroy(); } catch (error) {}
+      try {
+        oldPeer.destroy();
+      } catch (error) {
+        console.warn("Peer cleanup:", error);
+      }
     }
 
     remoteVideo.srcObject = null;
@@ -324,14 +247,16 @@
     remotePlaceholder.querySelector("strong").textContent = "Waiting for partner";
     remotePlaceholder.querySelector("small").textContent =
       "Your partner's video will appear here";
+
     setChatEnabled(false);
   }
 
   async function prepareCamera() {
     if (localStream) return true;
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setStatus("Camera access is unavailable. Open this website using HTTPS.");
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+      setStatus("Camera access unavailable. Open this website using HTTPS.");
       return false;
     }
 
@@ -344,18 +269,22 @@
       localVideo.srcObject = localStream;
       localPlaceholder.style.display = "none";
       return true;
+
     } catch (error) {
       console.error("Camera error:", error);
 
-      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+      if (error.name === "NotAllowedError" ||
+          error.name === "PermissionDeniedError") {
         setStatus("Camera/Microphone permission denied. Allow access in browser settings.");
-      } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+      } else if (error.name === "NotFoundError" ||
+                 error.name === "DevicesNotFoundError") {
         setStatus("Camera or microphone not found. Connect a camera and try again.");
       } else if (error.name === "NotReadableError") {
         setStatus("Camera is being used by another app. Close it and try again.");
       } else {
         setStatus("Could not access camera: " + error.message);
       }
+
       return false;
     }
   }
@@ -363,29 +292,42 @@
   function startSearching() {
     if (!socket.connected) {
       setStatus("Server connection lost. Please wait and try again.");
+      updateButtons();
       return;
     }
 
     searching = true;
     paired = false;
     manuallyStopped = false;
+
     destroyPeer();
     clearMessages();
     setChatEnabled(false);
     setStatus("Finding someone for you...");
     updateButtons();
 
-    socket.emit("find-partner", { region: "global" });
+    socket.emit("find-partner", { region: "any" });
   }
 
   async function startChat() {
     if (searching || paired) return;
 
     $("startBtn").disabled = true;
+    setStatus("Loading video connection settings...");
+
+    const iceReady = await loadIceServers();
+
+    if (!iceReady) {
+      $("startBtn").disabled = false;
+      updateButtons();
+      return;
+    }
+
     setStatus("Requesting camera and microphone access...");
 
-    const ready = await prepareCamera();
-    if (!ready) {
+    const cameraReady = await prepareCamera();
+
+    if (!cameraReady) {
       $("startBtn").disabled = false;
       updateButtons();
       return;
@@ -394,7 +336,7 @@
     startSearching();
   }
 
-  function createPeer(initiator) {
+  async function createPeer(initiator) {
     destroyPeer();
 
     if (!localStream) {
@@ -402,16 +344,25 @@
       return;
     }
 
+    // Refresh ICE configuration before creating the WebRTC peer
+    const iceReady = await loadIceServers();
+
+    if (!iceReady) {
+      setStatus("TURN configuration unavailable. Try again.");
+      return;
+    }
+
     try {
-      peer = new SimplePeer({
+      const currentPeer = new SimplePeer({
         initiator: initiator,
         stream: localStream,
-        config: iceConfig
+        config: iceConfig,
+        trickle: false
       });
 
-      const currentPeer = peer;
+      peer = currentPeer;
 
-      currentPeer.on("signal", (data) => {
+      currentPeer.on("signal", data => {
         if (peer === currentPeer && socket.connected) {
           socket.emit("signal", data);
         }
@@ -419,22 +370,28 @@
 
       currentPeer.on("connect", () => {
         if (peer !== currentPeer) return;
+
         stopConnectionTimer();
         setStatus("Video connected! You are now chatting.");
         setChatEnabled(true);
         addMessage("Video connection established.", "system");
       });
 
-      currentPeer.on("stream", (stream) => {
+      currentPeer.on("stream", stream => {
         if (peer !== currentPeer) return;
+
         remoteVideo.srcObject = stream;
         remotePlaceholder.style.display = "none";
-        remoteVideo.play().catch(() => {});
-        setStatus("Partner video received. Connecting...");
+
+        remoteVideo.play().catch(error => {
+          console.warn("Video autoplay blocked:", error);
+          setStatus("Partner video received. Tap the video to play.");
+        });
       });
 
-      currentPeer.on("error", (error) => {
+      currentPeer.on("error", error => {
         if (peer !== currentPeer) return;
+
         console.error("WebRTC error:", error);
         setStatus("Video connection error. Try NEXT or reconnect.");
         setChatEnabled(false);
@@ -442,6 +399,7 @@
 
       currentPeer.on("close", () => {
         if (peer !== currentPeer) return;
+
         peer = null;
         stopConnectionTimer();
         remoteVideo.srcObject = null;
@@ -451,12 +409,12 @@
 
       connectionTimer = setTimeout(() => {
         if (peer === currentPeer && !currentPeer.connected) {
-          setStatus("Video is taking too long. Try NEXT. A TURN server may be needed.");
+          setStatus("Video is taking too long. Check network or try NEXT.");
         }
-      }, 20000);
+      }, 25000);
 
     } catch (error) {
-      console.error(error);
+      console.error("Peer creation error:", error);
       setStatus("Could not start video connection. Please try again.");
     }
   }
@@ -466,7 +424,9 @@
     searching = false;
     paired = false;
 
-    if (sendStop && socket.connected) socket.emit("stop");
+    if (sendStop && socket.connected) {
+      socket.emit("stop");
+    }
 
     destroyPeer();
     setChatEnabled(false);
@@ -478,25 +438,33 @@
     if (!paired) return;
 
     socket.emit("stop");
+
     searching = false;
     paired = false;
+
     destroyPeer();
     clearMessages();
+
     setStatus("Finding your next partner...");
     updateButtons();
 
     setTimeout(() => {
-      if (!manuallyStopped) startSearching();
+      if (!manuallyStopped) {
+        startSearching();
+      }
     }, 300);
   }
 
+  // Buttons
   $("startBtn").addEventListener("click", startChat);
   $("nextBtn").addEventListener("click", goNext);
   $("stopBtn").addEventListener("click", () => stopEverything(true));
 
   $("reportBtn").addEventListener("click", () => {
     if (!paired) return;
+
     const reason = prompt("Why are you reporting this user?");
+
     if (!reason || !reason.trim()) return;
 
     socket.emit("report", { reason: reason.trim() });
@@ -504,10 +472,12 @@
     stopEverything(true);
   });
 
-  $("chatForm").addEventListener("submit", (event) => {
+  // Text chat
+  $("chatForm").addEventListener("submit", event => {
     event.preventDefault();
 
     const text = messageInput.value.trim();
+
     if (!text || !paired || !socket.connected) return;
 
     socket.emit("chat-message", text);
@@ -515,6 +485,7 @@
     messageInput.value = "";
   });
 
+  // Socket connection
   socket.on("connect", () => {
     setStatus("Connected to LoveConnect server. Click START.");
   });
@@ -522,22 +493,26 @@
   socket.on("disconnect", () => {
     searching = false;
     paired = false;
+
     destroyPeer();
     updateButtons();
+
     setStatus("Server disconnected. Refresh the page or try again.");
   });
 
   socket.on("waiting", () => {
     searching = true;
     paired = false;
+
     setStatus("Searching for a partner...");
     updateButtons();
   });
 
-  socket.on("matched", (data) => {
+  socket.on("matched", data => {
     searching = false;
     paired = true;
     manuallyStopped = false;
+
     clearMessages();
     setStatus("Partner found! Establishing video connection...");
     updateButtons();
@@ -545,7 +520,7 @@
     createPeer(Boolean(data && data.initiator));
   });
 
-  socket.on("signal", (data) => {
+  socket.on("signal", data => {
     if (!peer || !data) return;
 
     try {
@@ -556,18 +531,27 @@
     }
   });
 
-  socket.on("chat-message", (data) => {
-    const text = typeof data === "string" ? data : (data && data.text);
-    if (text) addMessage(text, "theirs");
+  socket.on("chat-message", data => {
+    const text = typeof data === "string"
+      ? data
+      : (data && data.text);
+
+    if (text) {
+      addMessage(text, "theirs");
+    }
   });
 
-  socket.on("partner-left", (data) => {
+  socket.on("partner-left", data => {
     searching = false;
     paired = false;
+
     destroyPeer();
     updateButtons();
 
-    const reason = data && data.reason ? data.reason : "Your partner left the chat.";
+    const reason = data && data.reason
+      ? data.reason
+      : "Your partner left the chat.";
+
     setStatus(reason);
     addMessage(reason, "system");
   });
@@ -583,8 +567,14 @@
 
   window.addEventListener("beforeunload", () => {
     if (socket.connected) socket.emit("stop");
-    if (peer && !peer.destroyed) peer.destroy();
-    if (localStream) localStream.getTracks().forEach(track => track.stop());
+
+    if (peer && !peer.destroyed) {
+      peer.destroy();
+    }
+
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+    }
   });
 
   updateButtons();
